@@ -7,16 +7,23 @@ const getAll = async (requestAnimationFrame, res) => {
     result.toArray().then((contacts) => {
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(contacts);
+    }).catch((err) => {
+        res.status(400).json({ message: err.message || 'Some error occurred while retrieving contacts.' });
     });
 };
 
 const getSingle = async (req, res) => {
+    if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).json('Must use a valid contact id to find a contact.');
+    }
     //#swagger.tags=['Contacts']
     const userId = new ObjectId(req.params.id);
     const result = await mongodb.getDatabase().db().collection('contacts').find({ _id: userId });
     result.toArray().then((contacts) => {
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json(contacts[0]);
+    }).catch((err) => {
+        res.status(400).json({ message: err.message || 'Some error occurred while retrieving the contact.' });
     });
 };
 
@@ -38,6 +45,9 @@ const createContact = async (req, res) => {
 };
 
 const updateContact = async (req, res) => {
+    if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).json('Must use a valid contact id to find a contact.');
+    }
     //#swagger.tags=['Contacts']
     const contactId = new ObjectId(req.params.id);
     const contact = {
@@ -56,6 +66,9 @@ const updateContact = async (req, res) => {
 };
 
 const deleteContact = async (req, res) => {
+    if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).json('Must use a valid contact id to find a contact.');
+    }
     //#swagger.tags=['Contacts']
     const contactId = new ObjectId(req.params.id);
     const response = await mongodb.getDatabase().db().collection('contacts').deleteOne({ _id: contactId }, true);
